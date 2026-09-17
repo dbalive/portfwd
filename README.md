@@ -29,7 +29,7 @@ Windows 跳板机图形工具。连上 SSH 跳板后，本机提供一个 SOCKS5
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-会按 `VERSION` 生成 `端口转发-vX.Y.Z.exe`。可执行文件不纳入 git。
+会按 `VERSION` 生成 `PortFwd-vX.Y.Z.exe`。可执行文件不纳入 git。
 
 ```powershell
 go test ./cmd/portfwd
@@ -37,7 +37,7 @@ go test ./cmd/portfwd
 
 ## 使用
 
-1. 运行 `端口转发-vX.Y.Z.exe`
+1. 运行 `PortFwd-vX.Y.Z.exe`
 2. 填写跳板地址、端口、用户名、密码，回车连接
 3. 顶部芯片变为已连接后，本机 SOCKS 即可用，例如：
 
@@ -53,7 +53,7 @@ socks5://127.0.0.1:1080
 命令行也可给 OpenSSH 当 `ProxyCommand`（多台内网主机共用一个 SOCKS 端口）：
 
 ```text
-ssh -o ProxyCommand="端口转发.exe proxy 127.0.0.1:1080 %h %p" user@192.168.10.10
+ssh -o ProxyCommand="PortFwd.exe proxy 127.0.0.1:1080 %h %p" user@192.168.10.10
 ```
 
 纯命令行 `ssh -D` 的步骤见 [docs/ssh-dynamic-forwarding.md](docs/ssh-dynamic-forwarding.md)。
