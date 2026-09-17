@@ -27,6 +27,10 @@ function jumpsFromConfig(c) {
   }];
 }
 
+function jumpRowKey(j) {
+  return [String((j && j.sshHost) || "").toLowerCase(), (j && j.sshPort) || "22", (j && j.user) || ""].join("|");
+}
+
 function mergeJumpDrafts(saved, draft) {
   const out = [];
   const taken = new Set();
@@ -59,10 +63,13 @@ function mergeJumpDrafts(saved, draft) {
     out.push(d);
   }
   for (const s of saved || []) {
-    if (s.id && !taken.has(s.id)) out.push(s);
+    if (!s.id || taken.has(s.id) || !s.sshHost || !s.user) continue;
+    const key = jumpRowKey(s);
+    if (out.some((x) => jumpRowKey(x) === key)) continue;
+    out.push(s);
   }
   if (out.length) return out;
-  if (saved && saved.length) return saved.slice();
+  if (saved && saved.length) return saved.filter((j) => j.sshHost && j.user);
   return draft || [];
 }
 
@@ -98,8 +105,9 @@ function filledJumps() {
 
 function settingsFromForm() {
   const rows = collectJumpRows();
-  const s = rows[0] || {};
+  const s = rows.find((j) => j.sshHost && j.user) || rows[0] || {};
   return {
+    id: s.id || "",
     sshHost: s.sshHost || "",
     sshPort: s.sshPort || "22",
     user: s.user || "",
@@ -615,8 +623,9 @@ $("remember").addEventListener("click", (ev) => ev.stopPropagation());
 $("remember").addEventListener("change", async () => {
   try {
     const on = $("remember").checked;
+    const rows = collectJumpRows();
     if (on) {
-      const filled = filledJumps();
+      const filled = rows.filter((j) => j.sshHost && j.user);
       if (filled.length) await saveJumps(filled);
     }
     state = await api("/api/remember", {
@@ -624,7 +633,12 @@ $("remember").addEventListener("change", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(rememberBody(on)),
     });
-    applyConfig(state.config);
+    $("remember").checked = !!state.config.remember;
+    $("target-host").value = state.config.targetHost || "";
+    localJumps = rows.length ? rows : jumpsFromConfig(state.config);
+    const saved = ((state.config && state.config.jumps) || []).filter((j) => j.sshHost && j.user);
+    if (saved.length) localJumps = mergeJumpDrafts(saved, localJumps);
+    rebuildJumpRows(localJumps);
     render();
   } catch (e) {
     alert(e.message);

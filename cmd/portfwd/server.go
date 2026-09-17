@@ -358,6 +358,7 @@ func (h *hub) saveJumps(jumps []Jump) error {
 
 type rememberReq struct {
 	Remember   bool   `json:"remember"`
+	JumpID     string `json:"id"`
 	SSHHost    string `json:"sshHost"`
 	SSHPort    string `json:"sshPort"`
 	User       string `json:"user"`
@@ -372,7 +373,7 @@ func (h *hub) setRemember(in rememberReq) {
 	if in.Remember {
 		h.cfg.Remember = true
 		s := Settings{
-			JumpID:    h.cfg.ActiveJumpID,
+			JumpID:    strings.TrimSpace(in.JumpID),
 			SSHHost:   strings.TrimSpace(in.SSHHost),
 			SSHPort:   strings.TrimSpace(in.SSHPort),
 			User:      strings.TrimSpace(in.User),

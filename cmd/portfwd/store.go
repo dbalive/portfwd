@@ -107,6 +107,9 @@ func parseConfigJSON(b []byte) FileConfig {
 }
 
 func configPath() (string, error) {
+	if fn := configPathFn; fn != nil {
+		return fn()
+	}
 	dir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
@@ -155,6 +158,8 @@ func saveConfig(c FileConfig) error {
 }
 
 var idSeq atomic.Int64
+
+var configPathFn func() (string, error)
 
 func newID() string {
 	return fmt.Sprintf("%d-%d", time.Now().UnixNano(), idSeq.Add(1))

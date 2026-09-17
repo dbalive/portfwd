@@ -1,9 +1,20 @@
 package main
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func useTempConfig(t *testing.T) {
+	t.Helper()
+	dir := t.TempDir()
+	old := configPathFn
+	configPathFn = func() (string, error) {
+		return filepath.Join(dir, "config.json"), nil
+	}
+	t.Cleanup(func() { configPathFn = old })
+}
 
 func TestJumpValidateRequiresHostAndUser(t *testing.T) {
 	if err := (Jump{SSHHost: "", User: "a"}).Validate(); err == nil {
@@ -62,6 +73,37 @@ func TestUpsertJumpUpdatesByID(t *testing.T) {
 	}
 	if len(c.Jumps) != 1 || c.ActiveJumpID != "j1" || c.SSHHost != "10.2.2.2" {
 		t.Fatalf("%+v", c)
+	}
+}
+
+func TestUpsertJumpFromSettingsIgnoresIncomplete(t *testing.T) {
+	c := FileConfig{Jumps: []Jump{{ID: "j1", SSHHost: "10.1.1.1", SSHPort: "22", User: "a", SOCKSPort: "1080"}}}
+	got, j := upsertJumpFromSettings(c, Settings{SSHHost: "", User: "", SSHPort: "22", SOCKSPort: "1080"})
+	if len(got.Jumps) != 1 || got.Jumps[0].ID != "j1" {
+		t.Fatalf("jumps %+v", got.Jumps)
+	}
+	if j.SSHHost != "" || j.ID != "" {
+		t.Fatalf("empty upsert %+v", j)
+	}
+}
+
+func TestSetRememberOnDoesNotAddIncompleteJump(t *testing.T) {
+	useTempConfig(t)
+	h := &hub{cfg: defaultConfig(), forwards: map[string]string{}, shutdown: make(chan struct{})}
+	h.setRemember(rememberReq{Remember: true, SSHPort: "22", SOCKSPort: "1080"})
+	if len(h.cfg.Jumps) != 0 {
+		t.Fatalf("jumps %+v", h.cfg.Jumps)
+	}
+}
+
+func TestSetRememberOnDoesNotDuplicateExistingJump(t *testing.T) {
+	useTempConfig(t)
+	h := &hub{cfg: defaultConfig(), forwards: map[string]string{}, shutdown: make(chan struct{})}
+	h.cfg.Jumps = []Jump{{ID: "j1", SSHHost: "10.1.1.1", SSHPort: "22", User: "ops", SOCKSPort: "1080"}}
+	h.cfg.ActiveJumpID = "j1"
+	h.setRemember(rememberReq{Remember: true, SSHHost: "10.1.1.1", SSHPort: "22", User: "ops", SOCKSPort: "1080"})
+	if len(h.cfg.Jumps) != 1 || h.cfg.Jumps[0].ID != "j1" {
+		t.Fatalf("jumps %+v", h.cfg.Jumps)
 	}
 }
 

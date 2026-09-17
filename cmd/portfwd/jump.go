@@ -170,6 +170,9 @@ func upsertJumpFromSettings(c FileConfig, s Settings) (FileConfig, Jump) {
 		Password:  s.Password,
 		SOCKSPort: s.SOCKSPort,
 	}.Normalize()
+	if j.SSHHost == "" || j.User == "" {
+		return c, Jump{}
+	}
 	if j.ID != "" {
 		for i := range c.Jumps {
 			if c.Jumps[i].ID == j.ID {
