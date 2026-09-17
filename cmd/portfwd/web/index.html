@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>动态端口转发</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <div class="app">
+    <section class="section jump-section">
+    <header class="top">
+      <div class="brand">动态端口转发</div>
+      <button type="button" id="socks-chip" class="chip" title="复制 SOCKS 地址"><span class="chip-dot" aria-hidden="true"></span><span class="chip-label">未连接</span></button>
+    </header>
+    <form id="jump-form" class="jump-form" action="#" method="post">
+      <div id="jump-rows"></div>
+    </form>
+    </section>
+    <section class="section ssh-section">
+      <div class="pane-bar">
+        <span class="kicker">配置 OpenSSH</span>
+      </div>
+      <div class="bar ssh-cfg">
+        <label class="w-host-wide">目标主机<input id="target-host" spellcheck="false" placeholder="192.168 192.169. 192.170. 或 192.168.1.1~10" /></label>
+        <button id="btn-ssh" disabled title="未检测到本机 SSH">配置 SSH</button>
+        <button id="btn-cmd">打开cmd</button>
+      </div>
+      <p class="bar-note">192.168 192.169. 192.170.：分别匹配 192.168*、192.169.*、192.170.*。192.168.1.1~10：这 10 个地址都走 SOCKS5 代理。</p>
+    </section>
+    <section class="section static-section">
+      <div class="pane-bar">
+        <span class="kicker">固定端口转发</span>
+        <button id="btn-add">添加</button>
+      </div>
+      <div class="table-wrap">
+        <table class="grid">
+          <thead>
+            <tr>
+              <th class="c-st">状态</th>
+              <th>本机</th>
+              <th>目标</th>
+              <th>备注</th>
+              <th class="c-op"></th>
+            </tr>
+          </thead>
+          <tbody id="tasks"></tbody>
+        </table>
+      </div>
+    </section>
+    <div id="split-table" class="split" title="拖动调整固定端口转发高度"></div>
+    <details class="dock" open>
+      <summary>
+        <span class="log-title">日志</span>
+        <label class="remember-box" title="勾选后记住跳板、目标主机和固定转发">
+          <input type="checkbox" id="remember" />
+          保存主机配置
+        </label>
+      </summary>
+      <div id="log" title="右击复制或清除"></div>
+    </details>
+    <div id="split-log" class="split" title="向下拖动加高日志"></div>
+  </div>
+  <div id="edit-mask" class="mask hidden">
+    <div class="card wide">
+      <div class="kicker">固定端口转发</div>
+      <div class="edit-form" id="edit-fields"></div>
+      <div class="btns-row">
+        <button id="edit-ok" class="primary">保存</button>
+        <button id="edit-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+  <div id="ssh-mask" class="mask hidden">
+    <div class="card wide">
+      <div class="kicker">OpenSSH 配置</div>
+      <p id="ssh-path"></p>
+      <textarea id="ssh-snippet" spellcheck="false"></textarea>
+      <div class="btns-row">
+        <button id="ssh-save" class="primary">保存</button>
+        <button id="ssh-cancel">关闭</button>
+      </div>
+    </div>
+  </div>
+  <div id="log-menu" class="ctx-menu hidden">
+    <button type="button" data-act="copy">复制</button>
+    <button type="button" data-act="clear">清除</button>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

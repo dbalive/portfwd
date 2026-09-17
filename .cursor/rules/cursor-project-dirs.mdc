@@ -1,0 +1,11 @@
+---
+description: 新 Cursor 项目必须建在 E:\900AGI-HOME\ 下，目录名以 _cursor 结尾
+alwaysApply: true
+---
+
+# Cursor 项目目录
+
+新开 Cursor 项目时，在 `E:\900AGI-HOME\` 下创建目录，目录名以 `_cursor` 结尾。
+
+- 正确：`E:\900AGI-HOME\portfwd_cursor`
+- 错误：`E:\900AGI-HOME\portfwd`、`D:\work\foo`
